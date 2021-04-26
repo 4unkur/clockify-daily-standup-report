@@ -32,11 +32,15 @@ class Clockify
 
     public function generateReport(): string
     {
+        $fromDate = Carbon::now()->dayOfWeek === Carbon::MONDAY
+            ? Carbon::parse('Last Friday')
+            : Carbon::yesterday();
+
         $response = $this->client->withHeaders(['X-Api-Key' => $this->config->get('app.clockify_api.key')])
             ->asJson()
             ->acceptJson()
             ->post("$this->baseReportsUrl/workspaces/$this->workspaceId/reports/summary", [
-                "dateRangeStart" => Carbon::yesterday()->toJSON(),
+                "dateRangeStart" => $fromDate->toJSON(),
                 "dateRangeEnd" => Carbon::today()->toJSON(),
                 "sortOrder" => "ASCENDING",
                 "summaryFilter" => [
