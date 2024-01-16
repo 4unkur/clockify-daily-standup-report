@@ -60,19 +60,23 @@ class Clockify
             $data = $response->json();
 
             foreach ($data['groupOne'] as $project) {
-                $log .= $project['name'] . "\n-------\n";
-
+                if ($project['name'] !== 'mydromon.com') {
+                    continue;
+                }
                 foreach ($project['children'] as $task) {
-                    $log .= $task['nameLowerCase'] . "\n";
+                    $log .= $task['nameLowerCase'] . PHP_EOL;
 
                     try {
                         foreach ($task['children'] as $subtask) {
-                            $log .= '* ' . $subtask['name'] . "\n";
+                            if (str_contains($subtask['name'], 'Daily Standup')) {
+                                continue;
+                            }
+                            $log .= '* ' . $subtask['name'] . PHP_EOL;
                         }
                     } catch (\Exception $e) {
                         dd($e, $task);
                     }
-                    $log .= "\n";
+                    $log .= PHP_EOL;
                 }
             }
         }
