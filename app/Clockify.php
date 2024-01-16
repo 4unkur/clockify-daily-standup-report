@@ -54,7 +54,7 @@ class Clockify
                 "amountShown" => "HIDE_AMOUNT",
             ]);
 
-        $log = '';
+        $entries = [];
 
         if ($response->ok()) {
             $data = $response->json();
@@ -64,23 +64,20 @@ class Clockify
                     continue;
                 }
                 foreach ($project['children'] as $task) {
-                    $log .= $task['nameLowerCase'] . PHP_EOL;
-
                     try {
                         foreach ($task['children'] as $subtask) {
                             if (str_contains($subtask['name'], 'Daily Standup')) {
                                 continue;
                             }
-                            $log .= '* ' . $subtask['name'] . PHP_EOL;
+                            $entries[] = $subtask['name'];
                         }
                     } catch (\Exception $e) {
                         dd($e, $task);
                     }
-                    $log .= PHP_EOL;
                 }
             }
         }
 
-        return $log;
+        return implode(PHP_EOL, $entries);
     }
 }
