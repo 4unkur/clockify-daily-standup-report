@@ -28,7 +28,7 @@ class GenerateReport extends Command
      */
     public function handle(Clockify $clockify)
     {
-        $this->info($clockify->generateReport());
+        $this->line($clockify->generateReport());
 
         return Command::SUCCESS;
     }
