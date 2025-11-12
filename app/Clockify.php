@@ -54,7 +54,7 @@ class Clockify
                 "amountShown" => "HIDE_AMOUNT",
             ]);
 
-        $entries = [];
+        $tasks = [];
 
         if ($response->ok()) {
             $data = $response->json();
@@ -64,20 +64,43 @@ class Clockify
                     continue;
                 }
                 foreach ($project['children'] as $task) {
+                    // Skip tasks that are "Daily Standup"
+                    if (!isset($task['name']) || str_contains($task['name'], 'Daily Standup')) {
+                        continue;
+                    }
+
+                    $taskName = $task['name'];
+                    $descriptions = [];
+
                     try {
-                        foreach ($task['children'] as $subtask) {
-                            if (str_contains($subtask['name'], 'Daily Standup')) {
-                                continue;
+                        // Check if task has children (time entries)
+                        if (isset($task['children']) && !empty($task['children'])) {
+                            foreach ($task['children'] as $subtask) {
+                                if (str_contains($subtask['name'], 'Daily Standup')) {
+                                    continue;
+                                }
+                                $descriptions[] = $subtask['name'];
                             }
-                            $entries[] = $subtask['name'];
                         }
                     } catch (\Exception $e) {
                         dd($e, $task);
                     }
+
+                    // Add task to results
+                    $tasks[$taskName] = $descriptions;
                 }
             }
         }
 
-        return implode(PHP_EOL, $entries);
+        // Format output
+        $output = [];
+        foreach ($tasks as $taskName => $descriptions) {
+            $output[] = $taskName;
+            foreach ($descriptions as $description) {
+                $output[] = "- $description";
+            }
+        }
+
+        return implode(PHP_EOL, $output);
     }
 }
